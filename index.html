@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Liminal Space Explorer</title>
+    <link rel="icon" href="data:,">
+    <link rel="stylesheet" href="style.css">
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://esm.sh/three@0.160.0",
+                "three/addons/": "https://esm.sh/three@0.160.0/examples/jsm/"
+            }
+        }
+    </script>
+</head>
+<body>
+    <div id="canvas-container"></div>
+
+    <div id="hud">
+        <div id="world-tag" title="Choose level"><span id="world-index">00</span><span id="world-name">Bliss</span><span id="world-seed"></span></div>
+    </div>
+
+    <button id="jump-btn" aria-label="Jump">
+        <svg viewBox="0 0 24 24" width="26" height="26"><path d="M12 5l-7 7h4.5v7h5v-7H19z" fill="currentColor"/></svg>
+    </button>
+
+    <div id="chat">
+        <div id="chat-log"></div>
+        <form id="chat-form" autocomplete="off"><input id="chat-input" maxlength="160" placeholder="Say something…" enterkeyhint="send"></form>
+    </div>
+    <button id="chat-btn" aria-label="Chat">
+        <svg viewBox="0 0 24 24" width="22" height="22"><path d="M4 5h16v11H9l-5 4z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+    </button>
+
+    <div id="datestamp"></div>
+    <div id="toast"><div class="toast-index"></div><div class="toast-name"></div></div>
+    <div id="glitch"></div>
+    <div id="scare"><img alt=""></div>
+
+    <div id="menu">
+        <div class="menu-card" id="title-screen">
+            <div class="eyebrow" id="menu-eyebrow">You have arrived</div>
+            <h1>Liminal Space<br>Explorer</h1>
+            <button id="start-btn">Enter</button>
+            <button id="fullscreen-btn" type="button">Fullscreen</button>
+            <div id="quality-settings">
+                <button id="quality-btn" data-open-quality type="button" aria-expanded="false" aria-controls="quality-modal">Quality</button>
+            </div>
+            <button id="entity-log-btn" type="button">Entity Log</button>
+            <div id="menu-extras" hidden>
+                <div><button id="levels-btn" type="button">Levels</button></div>
+                <div id="mp">
+                    <button id="entities-toggle" type="button" aria-pressed="false">Entities · Off</button>
+                    <button id="filters-toggle" type="button" aria-pressed="true">Filters · On</button>
+                </div>
+                <div class="keys desk">
+                    <span><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> move</span><span><kbd>Shift</kbd> run</span><span><kbd>Space</kbd> jump</span>
+                    <span class="mp-key"><kbd>T</kbd> chat</span>
+                </div>
+                <div class="keys mob"><span>Thumb on the left to move</span><span>Drag on the right to look</span><span>Push to the edge to run</span></div>
+            </div>
+            <p id="menu-credit">Original version made by: @BookwormKevin in websim.</p>
+        </div>
+        <div class="menu-card" id="level-screen" hidden>
+            <div class="eyebrow">Choose a level</div>
+            <div id="levels"></div>
+            <button id="levels-back" type="button">Back</button>
+        </div>
+        <div class="menu-card" id="entity-screen" hidden>
+            <div class="eyebrow">Entity Log</div>
+            <div id="entity-list"></div>
+            <button id="entities-back" type="button">Back</button>
+        </div>
+        <div class="menu-card" id="pause-screen" hidden>
+            <div class="eyebrow">Paused</div>
+            <h2>Paused</h2>
+            <div class="pause-actions">
+                <button id="resume-btn" type="button">Resume</button>
+                <button id="pause-quality-btn" data-open-quality type="button" aria-expanded="false" aria-controls="quality-modal">Quality</button>
+                <button id="audio-btn" type="button">Audio</button>
+                <button id="exit-btn" type="button">Exit</button>
+            </div>
+        </div>
+        <div class="menu-card" id="audio-screen" hidden>
+            <div class="eyebrow">Settings</div>
+            <h2>Audio</h2>
+            <label class="volume-control" for="audio-volume"><span>Volume</span><output id="audio-volume-value">100%</output></label>
+            <input id="audio-volume" type="range" min="0" max="100" step="1" value="100">
+            <button id="audio-back" type="button">Back</button>
+        </div>
+    </div>
+
+    <div id="loading-screen" hidden><div>Loading</div></div>
+
+    <div id="quality-modal" hidden>
+        <section id="quality-panel" role="dialog" aria-modal="true" aria-labelledby="quality-title">
+            <header class="quality-header">
+                <div><div class="eyebrow">Graphics</div><h2 id="quality-title">Quality</h2></div>
+                <button id="quality-close" type="button" aria-label="Close quality settings">×</button>
+            </header>
+            <div class="quality-group">
+                <div class="quality-label">General quality</div>
+                <div class="quality-options">
+                    <button type="button" data-setting="general" data-value="low">Low</button>
+                    <button type="button" data-setting="general" data-value="medium">Medium</button>
+                    <button type="button" data-setting="general" data-value="high">High</button>
+                    <button type="button" data-setting="general" data-value="ultra">Ultra</button>
+                </div>
+            </div>
+            <div class="quality-group">
+                <div class="quality-label">View distance</div>
+                <div class="quality-options">
+                    <button type="button" data-setting="distance" data-value="500">Near</button>
+                    <button type="button" data-setting="distance" data-value="1000">Normal</button>
+                    <button type="button" data-setting="distance" data-value="1500">Far</button>
+                    <button type="button" data-setting="distance" data-value="2000">Max</button>
+                </div>
+            </div>
+            <div class="quality-group">
+                <div class="quality-label">Texture quality</div>
+                <div class="quality-options">
+                    <button type="button" data-setting="texture" data-value="low">Low</button>
+                    <button type="button" data-setting="texture" data-value="medium">Medium</button>
+                    <button type="button" data-setting="texture" data-value="high">High</button>
+                </div>
+            </div>
+            <div class="quality-group">
+                <div class="quality-label">Model quality</div>
+                <div class="quality-options">
+                    <button type="button" data-setting="model" data-value="low">Low</button>
+                    <button type="button" data-setting="model" data-value="medium">Medium</button>
+                    <button type="button" data-setting="model" data-value="high">High</button>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script type="module" src="./main.js"></script>
+</body>
+</html>
